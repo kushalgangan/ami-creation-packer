@@ -1,0 +1,41 @@
+{
+    "variables":{
+        "aws_profile":"{{ env `AWS_PROFILE` }}"
+    },
+    "builders":[
+        {
+            "type":"amazon-ebs",
+            "profile":"{{ user `aws_profile` }}",
+            "region":"eu-central-1",
+            "source_ami":"ami-0eaec5838478eb0ba",
+            "instance_type":"t2.micro",
+            "ssh_username":"ec2-user",
+            "ami_name":"Jenkins-AMI-{{timestamp}}",
+            "tags": {
+		"Name":"Jenkins-AMI-{{timestamp}}"
+       	     }
+	}
+    ],
+    "provisioners":[
+        {
+            "type":"shell",
+            "script":"install-tools.sh"
+        },
+        {
+            "type":"file",
+            "source":"basic-security.groovy",
+            "destination":"/tmp/basic-security.groovy"
+        },
+        {
+        	"type":"shell",
+            "inline":[
+            	"sudo mkdir -p /var/lib/jenkins/init.groovy.d",
+                "sudo cp /tmp/basic-security.groovy /var/lib/jenkins/init.groovy.d/basic-security.groovy"
+            ]
+        },
+        {
+            "type":"shell",
+            "script":"install-jenkins-plugins.sh"
+        }
+    ]
+}
